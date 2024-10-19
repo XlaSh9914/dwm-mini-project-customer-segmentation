@@ -76,6 +76,7 @@ result_long_term = accurate_long_term.head(1) if not accurate_long_term.empty el
 
 # Combine results into a single DataFrame
 results = pd.concat([result_short_term, result_mid_term, result_long_term], ignore_index=True)
+sample_data.to_csv('./data/display_data.csv', index=False)
 
 # Print the results
 print("\nAccurately Predicted Rows for Each Tenure Category:")
