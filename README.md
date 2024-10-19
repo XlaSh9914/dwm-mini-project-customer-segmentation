@@ -1,4 +1,4 @@
-# :earth_americas: GDP dashboard template
+# 💳 Customer Segmentation using :blue[Decision Tree]
 
 A simple Streamlit app showing the GDP of different countries in the world.
 
