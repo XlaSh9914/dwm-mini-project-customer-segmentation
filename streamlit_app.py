@@ -1,151 +1,88 @@
 import streamlit as st
 import pandas as pd
-import math
+import time
+import joblib
+import numpy as np
 from pathlib import Path
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+    page_title='Customer Segmentation',
+    page_icon='💳', # This is an emoji shortcode. Could be a URL too.
 )
 
 # -----------------------------------------------------------------------------
-# Declare some useful functions.
+# Load the saved Decision Tree model and scaler
+dt_model = joblib.load('./decision_tree_model.pkl')
+scaler = joblib.load('./scaler.pkl')
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+def predict(balance, purchases, credit_limit,resultContainer):
+    features = [balance, purchases, credit_limit]
+    features = np.array(features).reshape(1, -1)
+    features_scaled = scaler.transform(features)
+    
+    # Predict the tenure category
+    predicted_category = dt_model.predict(features_scaled)[0]
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
-
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
-
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
-
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
-
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
+    period="0-7 Months" if predicted_category=="Short-term" else "8-10 Months" if predicted_category=="Mid-term" else "11-24 Months"
+    resultContainer.write("Result: The tenure for credit card EMIs should be **:blue["+predicted_category+"]** period or **:blue["+period+"]**.")
+    time.sleep(2)
+    return True
+    
 # -----------------------------------------------------------------------------
 # Draw the actual page
 
 # Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
 
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
+st.title("💳 Customer Segmentation using :blue[Decision Tree]")
+
+'''
+
+In this project, we are developing a decision tree model to segment customers based on key features from credit card data, specifically *balance*, *purchases*, and *credit limit*. By using these features, we aim to predict customer tenure, which is classified into *short-term*, *mid-term*, and *long-term* categories. This model can assist businesses in understanding customer behavior and tailoring marketing strategies accordingly.
+
+Our approach is inspired by the research conducted in the paper titled ["Study on Application of Customer Segmentation Based on Data Mining Technology"](https://ieeexplore.ieee.org/document/5235679) (DOI: 10.1109/ICCSA.2009.56), which discusses various data mining techniques applied to fraud detection in financial systems. We adapt their methodologies for customer segmentation, focusing on building an efficient decision tree classifier for better customer insights.
+
+
 '''
 
 # Add some spacing
 ''
 ''
 
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
+# Using object notation
+add_selectbox = st.sidebar.selectbox(
+    "How would you like to be contacted?",
+    ("Email", "Home phone", "Mobile phone")
 )
 
+# Using "with" notation
+with st.sidebar:
+    add_radio = st.radio(
+        "Choose a shipping method",
+        ("Standard (5-15 days)", "Express (2-5 days)")
+    )
+
+st.header('Prediction using your input', divider='gray')
 ''
+predictionForm=st.form('predictionForm')
+
+balance = predictionForm.number_input(
+    "**Balance to be paid**", value=None, placeholder="Type a number..."
+)
+purchases = predictionForm.number_input(
+    "**Purchases made**", value=None, placeholder="Type a number..."
+)
+credit_limit = predictionForm.number_input(
+    "**Credit limit on the card**", value=None, placeholder="Type a number..."
+)
 ''
 
+if credit_limit != None and purchases != None and credit_limit != None:
+    resultContainer=st.container(border=True)
+    if predict(balance, purchases, credit_limit, resultContainer):
+        predictionForm.form_submit_button('Re-run 🔁')
+    else:
+        predictionForm.form_submit_button('Done! ✔')
 
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+else:
+    predictionForm.form_submit_button('Predict 📊')
