@@ -1,6 +1,6 @@
-# 💳 Customer Segmentation using :blue[Decision Tree]
+# 💳 Customer Segmentation using Decision Tree
 
-A simple Streamlit app showing the 💳 Customer Segmentation using :blue[Decision Tree].
+A simple Streamlit app showing the 💳 Customer Segmentation using Decision Tree.
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gdp-dashboard-template.streamlit.app/)
 
