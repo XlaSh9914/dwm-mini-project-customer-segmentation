@@ -40,7 +40,7 @@ st.title("💳 Customer Segmentation using :blue[Decision Tree]")
 # Sidebar for navigation
 st.sidebar.title("Navigation")
 sections = {
-    "Home": "#home",
+    "Description": "#description",
     "Prediction": "#prediction",
     "Study of Classification": "#study-classification",
     "Decision Tree Visualization": "#decision-tree"
@@ -48,9 +48,9 @@ sections = {
 for section, link in sections.items():
     st.sidebar.markdown(f"[{section}]({link})")
 
-# Home Section
-st.markdown("<h2 id='home'>Home</h2>", unsafe_allow_html=True)
-''
+# Description Section
+st.markdown("<h2 id='description'></h2>", unsafe_allow_html=True)
+st.header("Description",divider='gray')
 st.write("""
 In this project, we are developing a decision tree model to segment customers based on key features from credit card data, specifically *balance*, *purchases*, and *credit limit*. By using these features, we aim to predict customer tenure, which is classified into *short-term*, *mid-term*, and *long-term* categories. This model can assist businesses in understanding customer behavior and tailoring marketing strategies accordingly.
 
@@ -60,7 +60,8 @@ Our approach is inspired by the research conducted in the paper titled ["Study o
 ''
 
 # Prediction Section
-st.markdown("<h2 id='prediction'>Prediction</h2>", unsafe_allow_html=True)
+st.markdown("<h2 id='prediction'></h2>", unsafe_allow_html=True)
+st.header("Prediction",divider='gray')
 predictionForm = st.form('predictionForm')
 ''
 balance = predictionForm.number_input("**Balance to be paid**", value=None, placeholder="Type a number...")
@@ -77,7 +78,8 @@ else:
     predictionForm.form_submit_button('Predict 📊')
 
 # Study of Classification Section
-st.markdown("<h2 id='study-classification'>Study of classification</h2>", unsafe_allow_html=True)
+st.markdown("<h2 id='study-classification'></h2>", unsafe_allow_html=True)
+st.header("Study Classification",divider='gray')
 
 # Drop other columns but keep 'PREDICTED_TENURE_CATEGORY'
 chart_data_limited = displayData[['BALANCE', 'PURCHASES', 'CREDIT_LIMIT', 'PREDICTED_TENURE_CATEGORY']].head(400)
@@ -109,9 +111,13 @@ fig.update_traces(marker=dict(size=5, line=dict(width=0.5, color='DarkSlateGrey'
 st.plotly_chart(fig)
 
 # Decision Tree Visualization Section
-st.markdown("<h2 id='decision-tree'>Decision Tree Visualization</h2>", unsafe_allow_html=True)
+st.markdown("<h2 id='decision-tree'></h2>", unsafe_allow_html=True)
+st.header("Decision Tree",divider='gray')
 st.write("Here is the visualization of the trained Decision Tree model.")
-st.image('decision_tree.png', caption='Decision Tree', use_column_width=True)
+st.write("Entire decision tree")
+st.image('decision_tree_from_pkl_matplotlib.png', caption='Entire Decision Tree', use_column_width=True)
+st.write("Partail decision tree")
+st.image('decision_tree_depth_3.png', caption=' Partial Decision Tree', use_column_width=True)
 
 st.write("""
 **Key Components of Decision Trees:**
